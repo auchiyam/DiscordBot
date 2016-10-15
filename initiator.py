@@ -65,5 +65,8 @@ Database.MySQL_db = sys.argv[5]
 
 initialize_database()
 
-b = Bot(sys.argv[1])
+try:
+    b = Bot(sys.argv[1])
+except OverflowError:
+    pass
 
