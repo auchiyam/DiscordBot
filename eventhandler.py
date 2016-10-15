@@ -33,9 +33,26 @@ class EventHandler:
                 for a in tmp:
                     v += a + "\\'"
                 v = v[0:-2]
-                oid = d.select("reminder", ["id"], "channel='%s' AND note='%s' AND time='%s'" % (reminder.channel.id, v, reminder.time))[0]['id']
+                oid = reminder.get_id()
                 return "A reminder with same note and time exists!\nPlease edit the existing reminder using the id [__%s__].\nFor more information on editing a reminder, type `%shelp remind` or `%sremind edit.`"\
                         % (oid, self.prefix, self.prefix)
+        except OverflowError:
+            self.alarm.add_job(self.postpone, trigger='date', args=[reminder],
+                           id="%s%s%s" % (self.datetime_to_time(reminder.time), \
+                                          reminder.channel, reminder.note),
+                           next_run_time=datetime.now() + timedelta(days=60))
+
+    def postpone(self, reminder):
+        try:
+            self.alarm.add_job(self.print_reminder, trigger='date', args=[reminder],
+                           id="%s%s%s" % (self.datetime_to_time(reminder.time), \
+                                          reminder.channel, reminder.note),
+                           next_run_time=reminder.time)
+        except:
+            self.alarm.add_job(self.postpone, trigger='date', args=[reminder],
+                           id="%s%s%s" % (self.datetime_to_time(reminder.time), \
+                                          reminder.channel, reminder.note),
+                           next_run_time=datetime.now() + timedelta(days=60))
 
     def print_reminder(self, reminder):
         m = "Hello, "
