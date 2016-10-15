@@ -21,16 +21,16 @@ class EventHandler:
 
     def create_new_alarm(self, reminder):
         try:
-            if reminder.time - datetime.now() > timedelta(hours=20):
+            if reminder.time - datetime.now() < timedelta(days=1):
                 self.alarm.add_job(self.print_reminder, trigger='date', args=[reminder],
                 id="%s%s%s" % (self.datetime_to_time(reminder.time),
                 reminder.channel, reminder.note),
                 next_run_time=reminder.time)
             else:
                 self.alarm.add_job(self.postpone, trigger='date', args=[reminder],
-                id="%s%s%s" % (self.datetime_to_time() + timedelta(hours=20), \
+                id="%s%s%s" % (self.datetime_to_time() + timedelta(days=1), \
                                reminder.channel, reminder.note),
-                next_run_time=datetime.now() + timedelta(hours=20))
+                next_run_time=datetime.now() + timedelta(days=1))
             return ""
         except ConflictingIdError:
             with Database() as d:
