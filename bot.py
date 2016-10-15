@@ -123,7 +123,7 @@ class Bot:
             elif c == "prefix":
                 await Bot.client.send_message(m.channel, "currently wip.")
 
-            elif command[0] == "id":
+            elif c == "id":
                 await Bot.client.send_message(m.channel, m.author.id)
     
             else:
