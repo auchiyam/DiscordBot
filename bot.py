@@ -127,7 +127,7 @@ class Bot:
                 await Bot.client.send_message(m.channel, m.author.id)
     
             else:
-                await Bot.client.send_message(m.channel, "The command '%s%s' doesn't exist!'" % (prefix[0]))
+                await Bot.client.send_message(m.channel, "The command '%s%s' doesn't exist!'" % (Bot.prefix[0]))
 
     #command to turn off Miku
     @staticmethod
@@ -164,7 +164,7 @@ class Bot:
             h += "---\n"
             h += "__help__: the command you are using right now! Provides list of all commands\n"
             h += "---\n"
-            h += "For more information about each commands, type '%shelp [command]'." % (prefix[0])
+            h += "For more information about each commands, type '%shelp [command]'." % (Bot.prefix[0])
 
         else:
             if command[0] == "anime":
@@ -208,7 +208,7 @@ class Bot:
                     h += "---\n"
                     h += legend
                     h += "---\n"
-                    h += "If you're still unsure of what to type for each arguments, type '%shelp remind [command]' for even more info!" % (prefix[0])
+                    h += "If you're still unsure of what to type for each arguments, type '%shelp remind [command]' for even more info!" % (Bot.prefix[0])
                 else:
                     if command[0] == "add" or command[0] == "-a":
                         h += "**remind add**\n"
