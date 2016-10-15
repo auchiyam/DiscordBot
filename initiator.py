@@ -1,6 +1,14 @@
 from bot import Bot
 from database import Database
 import sys
+import discord
+import logging
+
+logger = logging.getLogger('discord')
+logger.setLevel(logging.ERROE)
+handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
 
 #Use this bot through command prompt.  The arguments are
 #initiator.py bot_token IP_for_MySQL_database username_for_database password_for_the_username database_to_work_on
