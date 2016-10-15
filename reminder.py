@@ -232,7 +232,8 @@ class Reminder:
         if self.repeat != 5:
             old.update_reminder(self)
         else:
-            self.delete_reminder()
+            if self.time - datetime.now() < timedelta(minutes=10):
+                self.delete_reminder()
 
     def delete_reminder(self):
         with Database() as d:

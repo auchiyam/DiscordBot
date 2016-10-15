@@ -21,10 +21,16 @@ class EventHandler:
 
     def create_new_alarm(self, reminder):
         try:
-            self.alarm.add_job(self.print_reminder, trigger='date', args=[reminder],
-                           id="%s%s%s" % (self.datetime_to_time(reminder.time), \
-                                          reminder.channel, reminder.note),
-                           next_run_time=reminder.time)
+            if reminder.time - datetime.now() > timedelta(days=30):
+                self.alarm.add_job(self.print_reminder, trigger='date', args=[reminder],
+                id="%s%s%s" % (self.datetime_to_time(reminder.time),
+                reminder.channel, reminder.note),
+                next_run_time=reminder.time)
+            else:
+                self.alarm.add_job(self.postpone, trigger='date', args=[reminder],
+                id="%s%s%s" % (self.datetime_to_time() + timedelta(days=30), \
+                               reminder.channel, reminder.note),
+                next_run_time=datetime.now() + timedelta(days=30))
             return ""
         except ConflictingIdError:
             with Database() as d:
@@ -36,25 +42,9 @@ class EventHandler:
                 oid = reminder.get_id()
                 return "A reminder with same note and time exists!\nPlease edit the existing reminder using the id [__%s__].\nFor more information on editing a reminder, type `%shelp remind` or `%sremind edit.`"\
                         % (oid, self.prefix, self.prefix)
-        '''
-        except OverflowError:
-            self.alarm.add_job(self.postpone, trigger='date', args=[reminder],
-                           id="%s%s%s" % (self.datetime_to_time(reminder.time), \
-                                          reminder.channel, reminder.note),
-                           next_run_time=datetime.now() + timedelta(days=60))
-        '''
 
     def postpone(self, reminder):
-        try:
-            self.alarm.add_job(self.print_reminder, trigger='date', args=[reminder],
-                           id="%s%s%s" % (self.datetime_to_time(reminder.time), \
-                                          reminder.channel, reminder.note),
-                           next_run_time=reminder.time)
-        except:
-            self.alarm.add_job(self.postpone, trigger='date', args=[reminder],
-                           id="%s%s%s" % (self.datetime_to_time(reminder.time), \
-                                          reminder.channel, reminder.note),
-                           next_run_time=datetime.now() + timedelta(days=60))
+        self.create_new_alarm(reminder)
 
     def print_reminder(self, reminder):
         m = "Hello, "
