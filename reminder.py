@@ -74,6 +74,8 @@ class Reminder:
                     if get_repeat(cmd[0]) != 0:
                         repeat = get_repeat(cmd[0])
                         cmd.pop(0)
+                    else:
+                        repeat = 5
                 else:
                     repeat = 5
                 
