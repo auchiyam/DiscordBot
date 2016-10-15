@@ -49,7 +49,7 @@ class Bot:
                         if r.deleted:
                             continue
                         rid = r.get_id()
-                        us = [i["user"] for i in d.select_joined("users_highlighted_for_reminder", "reminder", ["users_highlighted_for_reminder.id=reminder.id", "users_highlighted_for_reminder.channel=reminder.channel"], ["user"])]
+                        us = [i["user"] for i in d.select_joined("users_highlighted_for_reminder", "reminder", ["users_highlighted_for_reminder.id=reminder.id", "users_highlighted_for_reminder.channel=reminder.channel"], ["users_highlighted_for_reminder.user"])]
                         r.users = us
                         try:
                             event.create_new_alarm(r)
