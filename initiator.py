@@ -44,7 +44,10 @@ def initialize_database():
                 for i in primary_keys[key]:
                     pk += '%s,' % (i)
                 pk = pk[0:-1] + ")"
-                d.MySQL_commands("alter table %s drop primary key, add primary key %s;" % (key, pk))
+                try:
+                    d.MySQL_commands("alter table %s drop primary key, add primary key %s;" % (key, pk))
+                except:
+                    d.MySQL_commands("alter table %s add primary key %s;" % (key, pk))
 
             else:                
                 l = ["%s %s" % (i[0], i[1]) for i in correct_tables[key]]
