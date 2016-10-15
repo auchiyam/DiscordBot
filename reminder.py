@@ -3,6 +3,9 @@ from datetime import datetime, timedelta
 from enum import  Enum
 import discord
 import botutil
+from database import Database
+import database
+import pymysql
 
 class Reminder:
     class Repeat(Enum):
@@ -13,12 +16,16 @@ class Reminder:
         never = 5
 
     def __init__(self, channel, server, command=list(), note="default text", time=datetime.now(), repeat=5, users=["everyone"], message=""):
-        self.time = time
+        if isinstance(time, str):
+            self.time = datetime.strptime("%Y-%m-%d %H:%M:%S", time)
+        else:
+            self.time = time
         self.repeat = 5
         self.users = users
         self.note = note
         self.server = server
         self.channel = channel
+        self.deleted = False
         self.error = ""
 
         if len(command) > 0:
@@ -48,18 +55,15 @@ class Reminder:
                 else:
                     return "Invalid input.  Note is not enclosed in quotes."
 
-                print("%s %s" % (cmd[0], cmd[1]))
                 #get time from command
                 if len(cmd) > 0:
                     if get_date(cmd[0]) != 0:
                         self.time = get_date(cmd[0])
                         cmd.pop(0)
-                        print(self.time)
                     if len(cmd) > 0 and get_time(cmd[0]) != 0:
                         t = get_time(cmd[0])
                         self.time = datetime(time.year, time.month, time.day, t.hour, t.minute, t.second)
                         cmd.pop(0)
-                        print(self.time)
                         
                 #checks if time is valid
                 if self.time - datetime.now() < timedelta(microseconds=0):
@@ -70,8 +74,8 @@ class Reminder:
                     if get_repeat(cmd[0]) != 0:
                         repeat = get_repeat(cmd[0])
                         cmd.pop(0)
-                    else:
-                        repeat = 5
+                else:
+                    repeat = 5
                 
                 #get users from command
                 self.users = get_users()
@@ -155,3 +159,86 @@ class Reminder:
                 return u
             
             self.error = parse(command)
+        else:
+            self.update_time()
+    
+    def __str__(self):
+        r = self
+        if not isinstance(r.channel, str):
+            return "Note: %s\nTime: %s\nRepeat: %s\nUsers: %s\nChannel: %s" % (r.note, r.time, r.repeat, r.users, r.channel.id)
+        else:
+            return "Note: %s\nTime: %s\nRepeat: %s\nUsers: %s\nChannel: %s" % (r.note, r.time, r.repeat, r.users, r.channel)
+
+    #inserts the reminder to the database
+    def insert_reminder(self):
+        with Database() as d:
+            if isinstance(r.channel, str)
+                did = d.select("reminder", ["max(id)"], "channel='%s'" % r.channel)[0]["max(id)"]
+            else:
+                did = d.select("reminder", ["max(id)"], "channel='%s'" % r.channel.id)[0]["max(id)"]
+            if isinstance(did, str):
+                rid = int(did[0]["max(id)"])
+            else:
+                rid = 0
+            n = d.escape_characters(self.note, "'")
+            while True:
+                try:
+                    d.insert("reminder", [rid, n, self.time, self.repeat, self.channel.id], ["id", "note", "time", "reuse", "channel"])
+                    break
+                except pymysql.err.IntegrityError:
+                    rid += 1
+            for u in self.users:
+                if not (bool(self.users) and all([isinstance(i, str) for i in self.users])):
+                    d.insert("users_highlighted_for_reminder", [rid, u.name, self.channel.id], ["id", "user", "channel"])
+                else:
+                    d.insert("users_highlighted_for_reminder", [rid, u, self.channel.id], ["id", "user", "channel"])
+            d.update_id("reminder", self.server.id, rid + 1)
+
+    #updates this reminder's database input to the new reminder in args
+    def update_reminder(self, new_reminder):
+        with Database() as d:
+            rid = self.get_id()
+            d.update("reminder", ["note='%s'" % new_reminder.note, "time='%s'" % new_reminder.time, "reuse='%s'" % new_reminder.repeat, "channel='%s'" % new_reminder.channel.id], "channel='%s' AND id='%s'" % (new_reminder.channel.id, rid))
+            d.delete("users_highlighted_for_reminder", "id='%s' AND channel='%s'" % (rid, self.channel.id))
+            for u in self.users:
+                if not (bool(self.users) and all([isinstance(i, str) for i in self.users])):
+                    d.insert("users_highlighted_for_reminder", [rid, u.name, self.channel.id])
+                else:
+                    d.insert("users_highlighted_for_reminder", [rid, u, self.channel.id])
+
+    def update_time(self):
+        old = self
+        while self.time - datetime.now() < timedelta(minutes=10):
+            if self.repeat == 5:
+                break
+            def get_time(time):
+                if self.repeat == 1:
+                    return time + timedelta(days=1)
+                if self.repeat == 2:
+                    return time + timedelta(days=7)
+                if self.repeat == 3:
+                    return time + timedelta(days=self.get_dates(time))
+                if self.repeat == 4:
+                    next_year = time + timedelta(days=365)
+                    if is_leap_year(next_year) and next_year >= datetime(year=next_year.year, month=2, day=29):
+                        return next_year + timedelta(days=1)
+                    return next_year
+                def is_leap_year(self, t):
+                    year = t.year
+                    return year % 4 == 0 and year % 100 != 0 or year % 400 == 0
+            self.time = get_time(self.time)
+        if self.repeat != 5:
+            old.update_reminder(self)
+        else:
+            self.delete_reminder()
+
+    def delete_reminder(self):
+        with Database() as d:
+            rid = self.get_id()
+            d.delete("reminder", "id='%s' AND channel='%s'" % (rid, self.channel.id))
+            d.delete("users_highlighted_for_reminder", "id='%s' AND channel='%s'" % (rid, self.channel.id))
+            self.deleted = True
+
+    def get_id(self):
+        with Database() as d:
+            return d.select("reminder", ["id"], "channel='%s' AND note='%s' AND time='%s'" % (self.channel.id, d.escape_characters(self.note, "'"), self.time))[0]['id']

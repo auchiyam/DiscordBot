@@ -34,7 +34,6 @@ class EventHandler:
                     v += a + "\\'"
                 v = v[0:-2]
                 oid = d.select("reminder", ["id"], "channel='%s' AND note='%s' AND time='%s'" % (reminder.channel.id, v, reminder.time))[0]['id']
-                print(oid)
                 return "A reminder with same note and time exists!\nPlease edit the existing reminder using the id [__%s__].\nFor more information on editing a reminder, type `%shelp remind` or `%sremind edit.`"\
                         % (oid, self.prefix, self.prefix)
 
@@ -51,13 +50,13 @@ class EventHandler:
             rmd = Reminder(reminder.channel, reminder.server, note=reminder.note, time=t, repeat=reminder.repeat, users=reminder.users)
             with Database() as d:
                 nt = d.escape_characters(reminder.note, "'")
-                d.update("reminder", ["time='%s'" % rmd.time], "channel='%s' AND note='%s' AND time='%s'" % (reminder.channel.id, nt, reminder.time))
+                reminder.update_reminder(rmd)
             self.create_new_alarm(rmd)
-        '''else:
+        else:
             with Database() as d:
-                #d.delete("reminder",
-        '''
-    
+                id = d.select("reminder", ["id"], "channel='%s' AND note='%s' AND time='%s'" % (reminder.channel.id, d.escape_characters(reminder.note, "'"), reminder.time))[0]['id']
+                reminder.delete_reminder()
+        
         asyncio.set_event_loop(self.loop)
         asyncio.ensure_future(self.client.send_message(reminder.channel, m))
         
@@ -104,6 +103,9 @@ class EventHandler:
             if self.is_leap_year(t):
                 return 29
             return 28
+
+    def get_id(self, operator):
+        return sele
 
     def datetime_to_time(self, t):
         return time.mktime(t.timetuple()) + t.microsecond / 1E6
