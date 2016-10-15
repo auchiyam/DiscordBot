@@ -50,11 +50,9 @@ class Bot:
                             continue
                         rid = r.get_id()
                         us = [i["user"] for i in d.select_joined("users_highlighted_for_reminder", "reminder", ["users_highlighted_for_reminder.id=reminder.id", "users_highlighted_for_reminder.channel=reminder.channel"], ["users_highlighted_for_reminder.user"])]
+                        print(us)
                         r.users = us
-                        try:
-                            event.create_new_alarm(r)
-                        except:
-                            r.delete_reminder()
+                        Bot.event.create_new_alarm(r)
 
         print('------')
         print('MikuBot is ready to go!')
