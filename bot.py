@@ -292,6 +292,7 @@ class Bot:
             await Bot.client.send_message(channel, r.error + "\n%s" % (h))
 
     '''
+    
     #list [note] [time1] [time2] [users]
     @staticmethod
     async def list_reminder(command):

@@ -172,9 +172,12 @@ class Reminder:
     #inserts the reminder to the database
     def insert_reminder(self):
         with Database() as d:
-            did = d.select("reminder", ["max(id)"])[0]["max(id)"]
+            if isinstance(r.channel, str)
+                did = d.select("reminder", ["max(id)"], "channel='%s'" % r.channel)[0]["max(id)"]
+            else:
+                did = d.select("reminder", ["max(id)"], "channel='%s'" % r.channel.id)[0]["max(id)"]
             if isinstance(did, str):
-                rid = int(d.select("reminder", ["max(id)"])[0]["max(id)"])
+                rid = int(did[0]["max(id)"])
             else:
                 rid = 0
             n = d.escape_characters(self.note, "'")
