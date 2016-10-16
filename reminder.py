@@ -25,7 +25,7 @@ class Reminder:
             self.time = datetime.strptime("%Y-%m-%d %H:%M:%S", time)
         else:
             self.time = time
-        self.repeat = 5
+        self.repeat = repeat
         self.users = users
         self.note = note
         if isinstance(server, str):
@@ -176,8 +176,6 @@ class Reminder:
                 return u
             
             self.error = parse(command)
-        else:
-            self.update_time()
     
     def __str__(self):
         r = self
@@ -191,10 +189,7 @@ class Reminder:
     #inserts the reminder to the database
     def insert_reminder(self):
         with Database() as d:
-            if isinstance(self.channel, str):
-                did = d.select("reminder", ["max(id)"], "channel='%s'" % self.channel)[0]["max(id)"]
-            else:
-                did = d.select("reminder", ["max(id)"], "channel='%s'" % self.channel.id)[0]["max(id)"]
+            did = d.select("reminder", ["max(id)"], "channel='%s'" % self.channel)[0]["max(id)"]
             if isinstance(did, str):
                 rid = int(did) + 1
             else:
@@ -225,7 +220,10 @@ class Reminder:
     def update_reminder(self, new_reminder):
         with Database() as d:
             rid = self.get_id()
-            d.update("reminder", ["note='%s'" % new_reminder.note, "time='%s'" % new_reminder.time, "reuse='%s'" % new_reminder.repeat, "channel='%s'" % new_reminder.channel.id], "channel='%s' AND id='%s'" % (new_reminder.channel.id, rid))
+            d.update("reminder", ["note='%s'" % new_reminder.note,
+                                  "time='%s'" % new_reminder.time,
+                                  "reuse='%s'" % new_reminder.repeat, 
+                                  "channel='%s'" % new_reminder.channel], "channel='%s' AND id='%s'" % (new_reminder.channel, rid))
             d.delete("users_highlighted_for_reminder", "id='%s' AND channel='%s'" % (rid, self.channel))
             for u in self.users:
                 if not (bool(self.users) and all([isinstance(i, str) for i in self.users])):
@@ -234,9 +232,11 @@ class Reminder:
                     d.insert("users_highlighted_for_reminder", [rid, u, self.channel])
 
     def update_time(self):
-        old = self
-        while self.time - datetime.now() < timedelta(minutes=10):
+        old = self.get_self()
+        while self.time - datetime.now() < timedelta():
+            print(self.time)
             if self.repeat == 5:
+                print(self.repeat)
                 break
             def get_time(time):
                 if self.repeat == 1:
@@ -244,7 +244,7 @@ class Reminder:
                 if self.repeat == 2:
                     return time + timedelta(days=7)
                 if self.repeat == 3:
-                    return time + timedelta(days=self.get_dates(time))
+                    return time + timedelta(days=get_dates(time))
                 if self.repeat == 4:
                     next_year = time + timedelta(days=365)
                     if is_leap_year(next_year) and next_year >= datetime(year=next_year.year, month=2, day=29):
@@ -253,6 +253,16 @@ class Reminder:
                 def is_leap_year(self, t):
                     year = t.year
                     return year % 4 == 0 and year % 100 != 0 or year % 400 == 0
+                def get_dates(self, t):
+                    month = t.month
+                    if (month % 2 == 1 and month < 8) or (month % 2 == 0 and month >= 8):
+                        return 31
+                    elif month != 2:
+                        return 30
+                    else:
+                        if self.is_leap_year(t):
+                            return 29
+                        return 28
             self.time = get_time(self.time)
         if self.repeat != 5:
             old.update_reminder(self)
@@ -273,3 +283,6 @@ class Reminder:
                 return d.select("reminder", ["id"], "channel='%s' AND note='%s' AND time='%s'" % (self.channel, d.escape_characters(self.note, "'"), self.time))[0]['id']
             except:
                 raise InvalidReminder(self)
+
+    def get_self(self):
+        return Reminder(self.channel, self.server, note=self.note, time=self.time, repeat=self.repeat, users=self.users)
