@@ -73,7 +73,7 @@ class Reminder:
                         cmd.pop(0)
                     if len(cmd) > 0 and get_time(cmd[0]) != 0:
                         t = get_time(cmd[0])
-                        self.time = datetime(time.year, time.month, time.day, t.hour, t.minute, t.second)
+                        self.time = datetime(self.time.year, self.time.month, day=self.time.day, hour=t.hour, minute=t.minute, second=t.second)
                         cmd.pop(0)
                         
                 #checks if time is valid
@@ -169,6 +169,10 @@ class Reminder:
                     u.update(message.mentions)
                 if len(u) == 0:
                     u = {message.author}
+                if "MikuBot" in u:
+                    u.remove("MikuBot")
+                if "Miku Test Bot" in u:
+                    u.remove("Miku Test Bot")
                 return u
             
             self.error = parse(command)
