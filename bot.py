@@ -124,9 +124,12 @@ class Bot:
 
             elif c == "id":
                 await Bot.client.send_message(m.channel, m.author.id)
+
+            elif c == "online":
+                await Bot.client.send_message(m.channel, "Hello, I'm online!")
     
             else:
-                await Bot.client.send_message(m.channel, "The command '%s%s' doesn't exist!'" % (Bot.prefix[0]))
+                await Bot.client.send_message(m.channel, "The command '%s%s' doesn't exist!" % (Bot.prefix[0]))
 
     #command to turn off Miku
     @staticmethod
@@ -252,21 +255,21 @@ class Bot:
                 await Bot.add_reminder(command, channel, server, message)
             elif c == "list" or c == "-l":
                 #self.list_reminder(command)
-                await Bot.client.send_message("Currently wip")
+                await Bot.client.send_message(message.channel, "Currently wip")
             elif c == "remove" or c == "-r":
-                await Bot.client.send_message("Currently wip")
+                await Bot.client.send_message(message.channel, "Currently wip")
             elif c == "edit" or c == "-e":
-                await Bot.client.send_message("Currently wip")
+                await Bot.client.send_message(message.channel, "Currently wip")
             elif c == "optout" or c == "-o":
-                await Bot.client.send_message("Currently wip")
+                await Bot.client.send_message(message.channel, "Currently wip")
             elif c == "describe" or c == "-d":
-                await Bot.client.send_message("Currently wip")
+                await Bot.client.send_message(message.channel, "Currently wip")
             else:
                 h = Bot.display_help(["remind"])
-                await Bot.client.send_message(m.channel, "That remind command doesn't exist!\n%s" % (h))
+                await Bot.client.send_message(m.channel, "That remind command doesn't exist!\nType `%shelp remind` for more info" % (Bot.prefix[0]))
         else:
             h = Bot.display_help(["remind"])
-            await Bot.client.send_message(m.channel, "That remind command doesn't exist!\n%s" % (h))  
+            await Bot.client.send_message(m.channel, "That remind command doesn't exist!\nType `%shelp remind` for more info" % (Bot.prefix[0]))
     
     #add "note" time [repeat] [users]
     @staticmethod
@@ -292,7 +295,7 @@ class Bot:
     @staticmethod
     async def list_reminder(command):
         r = Reminder.list_reminders(command)
-        
+
          
     @staticmethod
     async def remove_reminder(command):
