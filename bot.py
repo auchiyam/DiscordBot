@@ -129,7 +129,7 @@ class Bot:
                 await Bot.client.send_message(m.channel, "Hello, I'm online!")
     
             else:
-                await Bot.client.send_message(m.channel, "The command '%s%s' doesn't exist!" % (Bot.prefix[0]))
+                await Bot.client.send_message(m.channel, "The command '%s%s' doesn't exist!" % (Bot.prefix[0], c))
 
     #command to turn off Miku
     @staticmethod
