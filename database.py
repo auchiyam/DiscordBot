@@ -58,13 +58,8 @@ class Database:
                 col = ""
             sql = "INSERT INTO %s %s\nVALUES (" % (table, col)
             for v in values:
-                if isinstance(v, set):
-                    sql += "'{\"array\":["
-                    for i in v:
-                        sql += '"%s",' % (i)
-                    sql = sql[0:-1] + "]}',"
-                else:
-                    sql += "'%s'," % v
+                self.escape_characters(v, "'")
+                sql += "'%s'," % v
             sql = sql[0:-1] + ");"
             cursor.execute(sql)
         self.database.commit()
