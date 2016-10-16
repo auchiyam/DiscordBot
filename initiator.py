@@ -7,8 +7,23 @@ import logging
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s\n'))
 logger.addHandler(handler)
+
+logger2 = logging.getLogger('exceptions')
+logger2.setLevel(logging.DEBUG)
+handler2 = logging.FileHandler(filename='exception.log', encoding='utf-8', mode='w')
+handler2.setFormatter(logging.Formatter('\n%(asctime)s:%(levelname)s:%(name)s:\n%(message)s\n------\n'))
+logger2.addHandler(handler2)
+
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    logger2.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+sys.excepthook = handle_exception
 
 #Use this bot through command prompt.  The arguments are
 #initiator.py bot_token IP_for_MySQL_database username_for_database password_for_the_username database_to_work_on
@@ -66,5 +81,4 @@ Database.MySQL_db = sys.argv[5]
 initialize_database()
 
 b = Bot(sys.argv[1])
-
 
