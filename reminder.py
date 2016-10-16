@@ -235,7 +235,6 @@ class Reminder:
     def update_time(self):
         old = self.get_self()
         while self.time - datetime.now() < timedelta():
-            print(self.time)
             if self.repeat == 5:
                 print(self.repeat)
                 break
