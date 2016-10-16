@@ -58,7 +58,8 @@ class Database:
                 col = ""
             sql = "INSERT INTO %s %s\nVALUES (" % (table, col)
             for v in values:
-                self.escape_characters(v, "'")
+                if isinstance(v, str):
+                    self.escape_characters(v, "'")
                 sql += "'%s'," % v
             sql = sql[0:-1] + ");"
             cursor.execute(sql)
