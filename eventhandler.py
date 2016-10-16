@@ -50,9 +50,22 @@ class EventHandler:
         self.create_new_alarm(reminder)
 
     def print_reminder(self, reminder):
+        server = reminder.server
+        channel = reminder.channel
+        for i in self.client.servers:
+            if i.id == reminder.server:
+                server = i
+                break
+        for i in server.channels:
+            if i.id == channel:
+                channel = i
         m = "Hello, "
-        for u in reminder.users:
-            m += "%s, " % (u.mention)
+        us = {i if i.name in reminder.users else "" for i in server.members}
+        us.union({i if i.name in reminder.users else "" for i in server.roles})
+
+        for u in us:
+            if not isinstance(u, str):
+                m += "%s, " % (u.mention)
         m = m[0:-2] + "!\nIt is %s and this is a reminder for:" % (reminder.time)
         m += '```%s```' % reminder.note + "\n"
         if reminder.repeat != 5:
@@ -66,11 +79,10 @@ class EventHandler:
             self.create_new_alarm(rmd)
         else:
             with Database() as d:
-                id = d.select("reminder", ["id"], "channel='%s' AND note='%s' AND time='%s'" % (reminder.channel.id, d.escape_characters(reminder.note, "'"), reminder.time))[0]['id']
                 reminder.delete_reminder()
         
         asyncio.set_event_loop(self.loop)
-        asyncio.ensure_future(self.client.send_message(reminder.channel, m))
+        asyncio.ensure_future(self.client.send_message(channel, m))
         
         
     def delay(self, sec):
