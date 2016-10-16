@@ -289,7 +289,7 @@ class Bot:
 
     '''
     
-    #list [note] [time1] [time2] [users]
+    #list ["note"] [time1] [time2] [users]
     @staticmethod
     async def list_reminder(command):
          
