@@ -90,7 +90,7 @@ class Database:
                 sql += "%s AND " % (o)
             sql = sql[0:-5]
             if (len(operator) > 0):
-                sql += "WHERE %s;" % (operator)
+                sql += "\nWHERE %s;" % (operator)
             cursor.execute(sql)
             return cursor.fetchall()
 
