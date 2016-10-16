@@ -162,7 +162,7 @@ class Reminder:
             def get_users():
                 u = set()
                 if message.mention_everyone:
-                    u.update(self.server.members)
+                    u.update(message.server.members)
                 if len(message.role_mentions) > 0:
                     u.update(message.role_mentions)
                 if len(message.mentions) > 0:
@@ -177,10 +177,12 @@ class Reminder:
     
     def __str__(self):
         r = self
-        if not isinstance(r.channel, str):
-            return "Note: %s\nTime: %s\nRepeat: %s\nUsers: %s\nChannel: %s" % (r.note, r.time, r.repeat, r.users, r.channel.id)
-        else:
+        try:
+            rid = r.get_id()
             return "Note: %s\nTime: %s\nRepeat: %s\nUsers: %s\nChannel: %s" % (r.note, r.time, r.repeat, r.users, r.channel)
+        except InvalidReminder:
+            self.error = "invalid reminder"
+            return "This reminder does not exist in the database"
 
     #inserts the reminder to the database
     def insert_reminder(self):
@@ -213,7 +215,7 @@ class Reminder:
                     d.insert("users_highlighted_for_reminder", [rid, u.name, self.channel], ["id", "user", "channel"])
                 else:
                     d.insert("users_highlighted_for_reminder", [rid, u, self.channel], ["id", "user", "channel"])
-            d.update_id("reminder", self.server.id, rid + 1)
+            d.update_id("reminder", self.server, rid + 1)
             u = list()
             for k in r.users:
                 if isinstance(k, str):

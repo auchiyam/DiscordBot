@@ -292,6 +292,7 @@ class Bot:
     @staticmethod
     async def list_reminder(command):
         r = Reminder.list_reminders(command)
+        
          
     @staticmethod
     async def remove_reminder(command):
