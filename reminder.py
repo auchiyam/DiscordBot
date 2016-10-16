@@ -161,12 +161,13 @@ class Reminder:
 
             def get_users():
                 u = set()
+                print(message.mention_everyone)
                 if message.mention_everyone:
-                    u.union({i.name for i in message.server.members})
+                    u.update({i.name for i in message.server.members})
                 if len(message.role_mentions) > 0:
-                    u.union({i.name for i in message.role_mentions})
+                    u.update({i.name for i in message.role_mentions})
                 if len(message.mentions) > 0:
-                    u.union({i.name for i in message.mentions})
+                    u.update({i.name for i in message.mentions})
                 if len(u) == 0:
                     u = {message.author.name}
                 if "MikuBot" in u:
