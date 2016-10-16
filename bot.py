@@ -49,11 +49,12 @@ class Bot:
                         if r.deleted:
                             continue
                         rid = r.get_id()
-                        us = [i["user"] for i in d.select_joined("users_highlighted_for_reminder", "reminder", ["users_highlighted_for_reminder.id=reminder.id", "users_highlighted_for_reminder.channel=reminder.channel"], ["users_highlighted_for_reminder.user"])]
-                        print(us)
+                        us = [i["user"] for i in d.select_joined("users_highlighted_for_reminder", "reminder",
+                        ["users_highlighted_for_reminder.id=reminder.id", "users_highlighted_for_reminder.channel=reminder.channel"],
+                        ["users_highlighted_for_reminder.user"],
+                        "reminder.id='%s' AND reminder.channel='%s'" % (rid, r.channel))]
                         r.users = us
-                        Bot.event.create_new_alarm(r)
-
+                        err = Bot.event.create_new_alarm(r)
         print('------')
         print('MikuBot is ready to go!')
 
@@ -276,14 +277,11 @@ class Bot:
             if len(err) == 0:
                 with Database() as d:
                     n = d.escape_characters(r.note, "'")
-                    r.insert_reminder()
-
-                    u = list()
-                    for k in r.users:
-                        u.append(k.name)
-                    await Bot.client.send_message(channel, "The following reminder has been added!:\nNote: %s\nTime: %s\nRepeat: %s\nUsers: %s" % (r.note, r.time, r.repeat, u))
+                    err = r.insert_reminder()
+                    
+                    await Bot.client.send_message(channel, err)
             else:
-                h = Bot.display_help(["remind", "add"])
+                h = Bot.display_help(["remind"])
                 await Bot.client.send_message(channel, err + "\n%s" % (h))
         else:
             h = Bot.display_help(["remind", "add"])

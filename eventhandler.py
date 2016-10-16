@@ -22,14 +22,16 @@ class EventHandler:
     def create_new_alarm(self, reminder):
         try:
             t = datetime.now()
+            if not isinstance(reminder.channel, str):
+                reminder.channel=reminder.channel.id
             if reminder.time - t < timedelta(days=1):
                 self.alarm.add_job(self.print_reminder, trigger='date', args=[reminder],
                 id="%s%s%s" % (self.datetime_to_time(reminder.time),
-                reminder.channel, reminder.note),
+                               reminder.channel, reminder.note),
                 next_run_time=reminder.time)
             else:
                 self.alarm.add_job(self.postpone, trigger='date', args=[reminder],
-                id="%s%s%s" % (self.datetime_to_time(t + timedelta(days=1)), \
+                id="%s%s%s" % (self.datetime_to_time(reminder.time), \
                                reminder.channel, reminder.note),
                 next_run_time=t + timedelta(days=1))
             return ""
@@ -42,7 +44,7 @@ class EventHandler:
                 v = v[0:-2]
                 oid = reminder.get_id()
                 return "A reminder with same note and time exists!\nPlease edit the existing reminder using the id [__%s__].\nFor more information on editing a reminder, type `%shelp remind` or `%sremind edit.`"\
-                        % (oid, self.prefix, self.prefix)
+                        % (oid, self.prefix[0], self.prefix[0])
 
     def postpone(self, reminder):
         self.create_new_alarm(reminder)

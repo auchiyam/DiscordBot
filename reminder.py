@@ -7,6 +7,11 @@ from database import Database
 import database
 import pymysql
 
+class InvalidReminder(Exception):
+    def __init__(self, r):
+        self.message = "No such reminder exists"
+        self.reminder = r
+
 class Reminder:
     class Repeat(Enum):
         daily = 1
@@ -23,8 +28,14 @@ class Reminder:
         self.repeat = 5
         self.users = users
         self.note = note
-        self.server = server
-        self.channel = channel
+        if isinstance(server, str):
+            self.server = server
+        else:
+            self.server = server.id
+        if isinstance(channel, str):
+            self.channel = channel
+        else:
+            self.channel = channel.id
         self.deleted = False
         self.error = ""
 
@@ -179,34 +190,49 @@ class Reminder:
             else:
                 did = d.select("reminder", ["max(id)"], "channel='%s'" % self.channel.id)[0]["max(id)"]
             if isinstance(did, str):
-                rid = int(did[0]["max(id)"])
+                rid = int(did) + 1
             else:
                 rid = 0
             n = d.escape_characters(self.note, "'")
+            try:
+                oid = self.get_id()
+                self.error = "duplicate reminder"
+                return "A reminder with same note and time exists!\nPlease edit the existing reminder using the id [__%s__].\nFor more information on editing a reminder, type `%shelp remind` or `%sremind edit.`"\
+                    % (oid, self.prefix[0], self.prefix[0])
+            except InvalidReminder:
+                pass
+            
             while True:
                 try:
-                    d.insert("reminder", [rid, n, self.time, self.repeat, self.channel.id], ["id", "note", "time", "reuse", "channel"])
+                    d.insert("reminder", [rid, n, self.time, self.repeat, self.channel], ["id", "note", "time", "reuse", "channel"])
                     break
                 except pymysql.err.IntegrityError:
                     rid += 1
             for u in self.users:
                 if not (bool(self.users) and all([isinstance(i, str) for i in self.users])):
-                    d.insert("users_highlighted_for_reminder", [rid, u.name, self.channel.id], ["id", "user", "channel"])
+                    d.insert("users_highlighted_for_reminder", [rid, u.name, self.channel], ["id", "user", "channel"])
                 else:
-                    d.insert("users_highlighted_for_reminder", [rid, u, self.channel.id], ["id", "user", "channel"])
+                    d.insert("users_highlighted_for_reminder", [rid, u, self.channel], ["id", "user", "channel"])
             d.update_id("reminder", self.server.id, rid + 1)
+            u = list()
+            for k in r.users:
+                if isinstance(k, str):
+                    u.append(k)
+                else:
+                    u.append(k.name)
+            return ("The following reminder has been added!:\nNote: %s\nTime: %s\nRepeat: %s\nUsers: %s" % (self.note, self.time, self.repeat, u))
 
     #updates this reminder's database input to the new reminder in args
     def update_reminder(self, new_reminder):
         with Database() as d:
             rid = self.get_id()
             d.update("reminder", ["note='%s'" % new_reminder.note, "time='%s'" % new_reminder.time, "reuse='%s'" % new_reminder.repeat, "channel='%s'" % new_reminder.channel.id], "channel='%s' AND id='%s'" % (new_reminder.channel.id, rid))
-            d.delete("users_highlighted_for_reminder", "id='%s' AND channel='%s'" % (rid, self.channel.id))
+            d.delete("users_highlighted_for_reminder", "id='%s' AND channel='%s'" % (rid, self.channel))
             for u in self.users:
                 if not (bool(self.users) and all([isinstance(i, str) for i in self.users])):
-                    d.insert("users_highlighted_for_reminder", [rid, u.name, self.channel.id])
+                    d.insert("users_highlighted_for_reminder", [rid, u.name, self.channel])
                 else:
-                    d.insert("users_highlighted_for_reminder", [rid, u, self.channel.id])
+                    d.insert("users_highlighted_for_reminder", [rid, u, self.channel])
 
     def update_time(self):
         old = self
@@ -238,10 +264,13 @@ class Reminder:
     def delete_reminder(self):
         with Database() as d:
             rid = self.get_id()
-            d.delete("reminder", "id='%s' AND channel='%s'" % (rid, self.channel.id))
-            d.delete("users_highlighted_for_reminder", "id='%s' AND channel='%s'" % (rid, self.channel.id))
+            d.delete("reminder", "id='%s' AND channel='%s'" % (rid, self.channel))
+            d.delete("users_highlighted_for_reminder", "id='%s' AND channel='%s'" % (rid, self.channel))
             self.deleted = True
 
     def get_id(self):
         with Database() as d:
-            return d.select("reminder", ["id"], "channel='%s' AND note='%s' AND time='%s'" % (self.channel.id, d.escape_characters(self.note, "'"), self.time))[0]['id']
+            try:
+                return d.select("reminder", ["id"], "channel='%s' AND note='%s' AND time='%s'" % (self.channel, d.escape_characters(self.note, "'"), self.time))[0]['id']
+            except:
+                raise InvalidReminder(self)
