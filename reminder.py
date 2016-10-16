@@ -196,13 +196,6 @@ class Reminder:
             else:
                 rid = 0
             n = d.escape_characters(self.note, "'")
-            try:
-                oid = self.get_id()
-                self.error = "duplicate reminder"
-                return "A reminder with same note and time exists!\nPlease edit the existing reminder using the id [__%s__].\nFor more information on editing a reminder, type `%shelp remind` or `%sremind edit.`"\
-                    % (oid, self.prefix[0], self.prefix[0])
-            except InvalidReminder:
-                pass
             
             while True:
                 try:
@@ -222,7 +215,7 @@ class Reminder:
                     u.append(k)
                 else:
                     u.append(k.name)
-            return ("The following reminder has been added!:\nNote: %s\nTime: %s\nRepeat: %s\nUsers: %s" % (self.note, self.time, self.repeat, u))
+            return ("The following reminder has been added!\nNote: %s\nTime: %s\nRepeat: %s\nUsers: %s" % (self.note, self.time, self.repeat, u))
 
     #updates this reminder's database input to the new reminder in args
     def update_reminder(self, new_reminder):
