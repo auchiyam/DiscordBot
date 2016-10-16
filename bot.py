@@ -46,6 +46,7 @@ class Bot:
                     l = d.select("reminder", ["*"], "channel='%s'" % (channel.id))
                     for row in l:
                         r = Reminder(channel, server, note=row['note'], time=row['time'], repeat=row['reuse'])
+                        r.update_time()
                         if r.deleted:
                             continue
                         rid = r.get_id()
