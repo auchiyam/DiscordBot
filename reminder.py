@@ -217,7 +217,7 @@ class Reminder:
                     d.insert("users_highlighted_for_reminder", [rid, u, self.channel], ["id", "user", "channel"])
             d.update_id("reminder", self.server, rid + 1)
             u = list()
-            for k in r.users:
+            for k in self.users:
                 if isinstance(k, str):
                     u.append(k)
                 else:
