@@ -6,7 +6,14 @@ from database import Database
 from eventhandler import EventHandler
 import json
 from io import StringIO
+import logging
+import sys
 
+logger = logging.getLogger('exception')
+logger.setLevel(logging.DEBUG)
+handler = logging.FileHandler(filename='exception.log', encoding='utf-8', mode='w')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:\n%(message)s\n'))
+logger.addHandler(handler)
 
 
 class Bot:
@@ -24,6 +31,12 @@ class Bot:
 
     def __init__(self, token):
         Bot.client.run(token)
+    
+    @client.event
+    async def on_error(event, *args, **kwargs):
+        err = sys.exc_info()
+        logger.exception("Detected error in %s: \n%s: %s\n%s\n------" % (event, err[0], err[1], err[2]))
+        pass
 
     #preloading on start up
     @client.event
@@ -128,6 +141,9 @@ class Bot:
 
             elif c == "online":
                 await Bot.client.send_message(m.channel, "Hello, I'm online!")
+
+            elif c == "error":
+                raise Exception("test")
     
             else:
                 await Bot.client.send_message(m.channel, "The command '%s%s' doesn't exist!" % (p, c))
