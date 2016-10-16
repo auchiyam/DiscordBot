@@ -282,16 +282,17 @@ class Bot:
                     await Bot.client.send_message(channel, err)
             else:
                 h = Bot.display_help(["remind"])
-                await Bot.client.send_message(channel, err + "\n%s" % (h))
+                await Bot.client.send_message(channel, err + "\n")
         else:
             h = Bot.display_help(["remind", "add"])
-            await Bot.client.send_message(channel, r.error + "\n%s" % (h))
+            await Bot.client.send_message(channel, r.error + "\n")
 
     '''
-    
-    #list [note] [time1] [time2] [users]
+    #list ["note"] [time1] [time2] [users]
     @staticmethod
     async def list_reminder(command):
+        r = Reminder.list_reminders(command)
+        
          
     @staticmethod
     async def remove_reminder(command):
