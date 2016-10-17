@@ -83,12 +83,6 @@ class EventHandler:
         
         asyncio.set_event_loop(self.loop)
         asyncio.ensure_future(self.client.send_message(channel, m))
-        
-        
-    def delay(self, sec):
-        t0 = time.time()
-        while time.time() < t0 + sec:
-            time.sleep(1)
     
     def translate_repeat(self, reminder):
         if reminder.repeat == 1:
