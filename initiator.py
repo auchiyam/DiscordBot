@@ -65,6 +65,13 @@ def initialize_database():
                 pk = pk[0:-1] + ")"
                 d.MySQL_commands("alter table %s add primary key %s;" % (key, pk))
 
+async def back():
+    count = 0
+    while not Bot.client.is_closed:
+        log.info("running for... %s min" % count)
+        count += 1
+        await asyncio.sleep(60)
+
 Database.MySQL_IP = sys.argv[2]
 Database.MySQL_user = sys.argv[3]
 Database.MySQL_pass = sys.argv[4]
@@ -76,9 +83,3 @@ Bot.client.loop.create_task(back())
 
 b = Bot(sys.argv[1])
 
-def back():
-    count = 0
-    while not Bot.client.is_closed:
-        log.info("running for...%s" % count)
-        count += 1
-        await asyncio.sleep(60)
