@@ -2,5 +2,7 @@ __pycache__
 .vscode
 push changes.bat
 login test.bat
+login miku.bat
 discord.log
 exception.log
+timer.log

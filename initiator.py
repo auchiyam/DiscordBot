@@ -3,12 +3,19 @@ from database import Database
 import sys
 import discord
 import logging
+import asyncio
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
+
+log = logging.getLogger('timer')
+log.setLevel(logging.DEBUG)
+hand = logging.FileHandler(filename='timer.log', encoding='utf-8', mode='w')
+hand.setFormatter(logging.Formatter("%(asctime)s: %(message)s"))
+log.addHandler(hand)
 
 #Use this bot through command prompt.  The arguments are
 #initiator.py bot_token IP_for_MySQL_database username_for_database password_for_the_username database_to_work_on
@@ -58,6 +65,13 @@ def initialize_database():
                 pk = pk[0:-1] + ")"
                 d.MySQL_commands("alter table %s add primary key %s;" % (key, pk))
 
+async def back():
+    count = 0
+    while not Bot.client.is_closed:
+        log.info("running for... %s min" % count)
+        count += 1
+        await asyncio.sleep(60)
+
 Database.MySQL_IP = sys.argv[2]
 Database.MySQL_user = sys.argv[3]
 Database.MySQL_pass = sys.argv[4]
@@ -65,4 +79,7 @@ Database.MySQL_db = sys.argv[5]
 
 initialize_database()
 
+Bot.client.loop.create_task(back())
+
 b = Bot(sys.argv[1])
+

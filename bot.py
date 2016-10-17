@@ -90,10 +90,10 @@ class Bot:
     #figures out what command to use
     @staticmethod
     async def switch(m, p):
-        command = m.content.lower()[len(p):len(m.content)].split()
+        command = m.content[len(p):len(m.content)].split()
         #help
         if (len(command) > 0):
-            c = command[0]
+            c = command[0].lower()
             command.pop(0)
             if c == "help":
                 h = Bot.display_help(command)
@@ -266,7 +266,7 @@ class Bot:
     @staticmethod
     async def reminder(command, channel, server, message):
         if (len(command) > 0):
-            c = command[0]
+            c = command[0].lower()
             command.pop(0)
             if c == "add" or c == "-a":
                 await Bot.add_reminder(command, channel, server, message)

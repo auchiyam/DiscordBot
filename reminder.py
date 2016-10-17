@@ -98,15 +98,15 @@ class Reminder:
                 return ""
 
             def get_repeat(command):
-                if (command == "daily"):
+                if (command.lower() == "daily"):
                     return 1
-                elif (command == "weekly"):
+                elif (command.lower() == "weekly"):
                     return 2
-                elif (command == "monthly"):
+                elif (command.lower() == "monthly"):
                     return 3
-                elif (command == "yearly"):
+                elif (command.lower() == "yearly"):
                     return 4
-                elif (command == "never"):
+                elif (command.lower() == "never"):
                     return 5
                 else:
                     return 0
@@ -161,7 +161,6 @@ class Reminder:
 
             def get_users():
                 u = set()
-                print(message.mention_everyone)
                 if message.mention_everyone:
                     u.update({i.name for i in message.server.members})
                 if len(message.role_mentions) > 0:
@@ -236,7 +235,6 @@ class Reminder:
         old = self.get_self()
         while self.time - datetime.now() < timedelta():
             if self.repeat == 5:
-                print(self.repeat)
                 break
             def get_time(time):
                 if self.repeat == 1:
