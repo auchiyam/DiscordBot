@@ -59,15 +59,15 @@ class Bot:
                     l = d.select("reminder", ["*"], "channel='%s'" % (channel.id))
                     for row in l:
                         r = Reminder(channel, server, note=row['note'], time=row['time'], repeat=row['reuse'])
-                        r.update_time()
-                        if r.deleted:
-                            continue
                         rid = r.get_id()
                         us = [i["user"] for i in d.select_joined("users_highlighted_for_reminder", "reminder",
                         ["users_highlighted_for_reminder.id=reminder.id", "users_highlighted_for_reminder.channel=reminder.channel"],
                         ["users_highlighted_for_reminder.user"],
                         "reminder.id='%s' AND reminder.channel='%s'" % (rid, r.channel))]
                         r.users = us
+                        r.update_time()
+                        if r.deleted:
+                            continue
                         err = Bot.event.create_new_alarm(r)
         print('------')
         print('MikuBot is ready to go!')
